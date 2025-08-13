@@ -1,6 +1,5 @@
 ## RESCUE: Crowd Evacuation Simulation via Controlling SDM-United Characters
-
-[Author1], [Author2], [Author3]  
+ 
 ICCV 2025 Highlight
 
 [Project]([RESCUE Project Page](https://cic.tju.edu.cn/faculty/likun/projects/RESCUE/index.html)) [arXiv]([[2507.20117\] RESCUE: Crowd Evacuation Simulation via Controlling SDM-United Characters](https://arxiv.org/abs/2507.20117))
