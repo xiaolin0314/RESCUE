@@ -6,7 +6,8 @@ ICCV 2025 Highlight
 
 ## Introduction
 This repository will host the code and data for our paper **"RESCUE: Crowd Evacuation Simulation via Controlling SDM-United Characters"**.  
-The code is currently being organized and will be released soon.  
+The code will be released in December 2025.
+We sincerely apologize for the long wait and appreciate your patience.
 
 ## Citation
 If you find our work useful, please consider citing our paper:
