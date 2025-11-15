@@ -1,0 +1,10 @@
+zup: True
+scene_dir: "/home/xiaolin/16T/testrooms/scene1/"
+scene_path : "/home/xiaolin/16T/testrooms/scene1/1.obj"
+navmesh_tight_path : "/home/xiaolin/16T/testrooms/scene1/navmesh_loose.obj"
+target_point: [30,0]
+room_boundarys: [-20,9,-8,9]
+initial_path : "scene1_50.npy"
+cam_pos : [20,0,17]
+cam_target: [0,0,0]
+way_points_path: "scene1_waypoints.pkl"
