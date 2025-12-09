@@ -172,7 +172,7 @@ class BaseTask():
                 cam_target = gymapi.Vec3(10.0, 0.0, 15.0)
 
             self.gym.viewer_camera_look_at(self.viewer, None, cam_pos,
-                                           cam_target)
+                                           cam_target) 
 
 
         ###### Custom Camera Sensors ######

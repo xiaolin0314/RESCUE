@@ -108,15 +108,15 @@ def load_cfg(args):
 
     if args.epoch > 0:
         cfg_train["params"]["load_checkpoint"] = True
-        cfg_train["params"]["load_path"] = osp.join(args.network_path,   exp_name + "_" + str(args.epoch).zfill(8) + '.pth')
+        cfg_train["params"]["load_path"] = osp.join(args.ckpt_path,   exp_name + "_" + str(args.epoch).zfill(8) + '.pth')
         args.checkpoint = cfg_train["params"]["load_path"]
     elif args.epoch == -1:
         cfg_train["params"]["load_checkpoint"] = True
-        cfg_train["params"]["load_path"] = osp.join(args.network_path,   exp_name  + '.pth')
+        cfg_train["params"]["load_path"] = osp.join(args.ckpt_path,   exp_name  + '.pth')
         args.checkpoint = cfg_train["params"]["load_path"]
 
     # if args.checkpoint != "Base":
-    # cfg_train["params"]["load_path"] = osp.join(args.network_path,   exp_name + "_" + str(args.epoch).zfill(8) + '.pth')
+    # cfg_train["params"]["load_path"] = osp.join(args.ckpt_path,   exp_name + "_" + str(args.epoch).zfill(8) + '.pth')
 
     if args.llc_checkpoint != "":
         cfg_train["params"]["config"]["llc_checkpoint"] = args.llc_checkpoint
@@ -367,7 +367,7 @@ def get_args(benchmark=False):
             "Apply additional PyTorch settings for more deterministic behaviour"
         },
         {
-            "name": "--network_path",
+            "name": "--ckpt_path",
             "type": str,
             "default": "output/",
             "help": "Specify network output directory"
@@ -408,8 +408,9 @@ def get_args(benchmark=False):
         },
         {
             "name": "--real_mesh",
+            "type": bool,
             "action": "store_true",
-            "default": False,
+            "default": True,
             "help": "load real data mesh"
         },
         {
@@ -421,7 +422,7 @@ def get_args(benchmark=False):
         {
             "name": "--small_terrain",
             "action": "store_true",
-            "default": False,
+            "default": True,
             "help": "load real data mesh"
         },
         {
@@ -431,6 +432,7 @@ def get_args(benchmark=False):
             "help": "load real data mesh"
         },
         {
+            
             "name": "--add_proj",
             "action": "store_true",
             "default": False,

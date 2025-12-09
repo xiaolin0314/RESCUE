@@ -193,7 +193,7 @@ def main():
     args = get_args()
     cfg_env_name = args.cfg_env.split("/")[-1].split(".")[0]
 
-    args.logdir = args.network_path
+    args.logdir = args.ckpt_path
     cfg, cfg_train, logdir = load_cfg(args)
     flags.debug, flags.follow, flags.fixed, flags.divide_group, flags.no_collision_check, flags.fixed_path, flags.real_path, flags.small_terrain, flags.show_traj, flags.server_mode, flags.slow, flags.height_debug, flags.random_heading, flags.no_virtual_display= \
         args.debug, args.follow, False, False, False, False, False, args.small_terrain, True, args.server_mode, False, False, args.random_heading, args.no_virtual_display
@@ -241,12 +241,12 @@ def main():
 
 
     # Create default directories for weights and statistics
-    cfg_train['params']['config']['network_path'] = args.network_path
+    cfg_train['params']['config']['ckpt_path'] = args.ckpt_path
     args.log_path = osp.join(args.log_path, cfg['name'], cfg_env_name)
     cfg_train['params']['config']['log_path'] = args.log_path
     cfg_train['params']['config']['train_dir'] = args.log_path # jp hack fix this asap
 
-    os.makedirs(args.network_path, exist_ok=True)
+    os.makedirs(args.ckpt_path, exist_ok=True)
     os.makedirs(args.log_path, exist_ok=True)
 
     vargs = vars(args)

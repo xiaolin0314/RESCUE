@@ -1,0 +1,8 @@
+zup: True
+scene_dir: "scenes/scene4/"
+scene_path : "scenes/scene4/4.obj"
+navmesh_tight_path : "scenes/scene4/navmesh.obj"
+target_point: [19,0]
+room_boundarys: [-20,3,-10,8]
+cam_pos : [18,0,21]
+cam_target:  [0,0,0]

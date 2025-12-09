@@ -109,7 +109,7 @@ class CommonAgent(a2c_continuous.A2CAgent):
         self.obs = self.env_reset()
         self.curr_frames = self.batch_size_envs
 
-        model_output_file = osp.join(self.network_path, self.config['name'])
+        model_output_file = osp.join(self.ckpt_path, self.config['name'])
 
         if self.multi_gpu:
             self.hvd.setup_algo(self)

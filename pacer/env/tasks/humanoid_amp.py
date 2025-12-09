@@ -724,7 +724,7 @@ class HumanoidAMP(Humanoid):
         new_cam_pos = gymapi.Vec3(x,y,z)
         x,y,z = self.cam_target
         new_cam_target = gymapi.Vec3(x,y,z)
-        # self.gym.viewer_camera_look_at(self.viewer, None, new_cam_pos, new_cam_target)
+        self.gym.viewer_camera_look_at(self.viewer, None, new_cam_pos, new_cam_target)
         self._cam_prev_char_pos[:] = char_root_pos
         return
 
