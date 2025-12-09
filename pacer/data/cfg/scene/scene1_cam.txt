@@ -1,3 +1,0 @@
-30people up2down
-cam_pos : [20,0,17]
-cam_target : [0,0,0]
