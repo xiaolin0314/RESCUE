@@ -81,7 +81,7 @@ Use the `--headless` option when running without a visualization window.
 
 This repository is built on top of the following amazing repositories:
 
-- Main code framework is from: [Pacer]([GitHub - nv-tlabs/pacer: Official implementation of PACER, Pedestrian Animation ControllER, of CVPR 2023 paper: "Trace and Pace: Controllable Pedestrian Animation via Guided Trajectory Diffusion".](https://github.com/nv-tlabs/pacer)),
+- Main code framework is from: [Pacer](https://github.com/nv-tlabs/pacer),
 - Code of gait converter is adapted from: [CAMDM](https://github.com/AIGAnimation/CAMDM/blob/main/Evaluation/feature_extractor/train_classifier.py),
 - Code of finding waypoints is adapted from: [DIMOS](https://github.com/zkf1997/DIMOS)
 
