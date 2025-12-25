@@ -1159,7 +1159,7 @@ class SocialForceModel:
                 self.way_points.append(path)
                 initial_positions.append(pos)
 
-
+        initial_positions = np.stack(initial_positions,axis=0)
         
         return torch.tensor(initial_positions, device=self.device)
 
@@ -1252,45 +1252,98 @@ class SocialForceModel:
 
         return repulsive_forces
     
+    # def compute_other_forces(self, positions):
+    #     positions_diff = positions.unsqueeze(1) - positions.unsqueeze(0)  # [n,n,2] [n,n,2] agent j 指向 agent i 的向量 positions_diff[i, j] = positions[i] - positions[j]
+    #     distances = torch.norm(positions_diff, dim=-1)  # [n,n] 
+        
+
+    #     unit_directions = positions_diff / (distances.unsqueeze(-1) + 1e-8)
+    #     desired_directions = self.targets - positions  # [n,2]
+    #     desired_directions = desired_directions / (torch.norm(desired_directions, dim=-1, keepdim=True) + 1e-8)
+    #     angles = torch.sum(unit_directions * desired_directions.unsqueeze(1), dim=-1)  # [n,n] agent j 指向 i 的方向，与 i 的期望方向夹角 的余弦值
+        
+
+    #     front_angle_threshold = torch.cos(torch.tensor(30.0 / 180.0 * np.pi))  
+    #     close_dist = 2 * self.r  
+    #     front_mask = (angles > front_angle_threshold) & (distances > 0) #i是否在j的前面
+    #     close_mask = distances < close_dist#i是否距离j很近
+        
+
+    #     side_space_mask = torch.abs(angles) > torch.cos(torch.tensor(60.0 / 180.0 * np.pi))
+    #     has_side_space = ~((side_space_mask & close_mask).any(dim=1))  #(side_space_mask & close_mask)：i不在j的前方很侧的位置且离得j很近  i紧后面没有任何人在侧方则为True
+    #     front_obstacles = (front_mask & close_mask).any(dim=1)  #i是否在某j的前方很近距离
+    #     stop_mask = front_obstacles & ~has_side_space #i在某j前方近距离且i在某j前方很侧的位置，则停  停之停之我晕了！
+    #     active_mask = ~stop_mask & ~self.reached_target #i不停且没到达终点22
+    
+    #     repulsive_forces = torch.zeros_like(positions)
+        
+    #     # Calculate bypass force (vectorized calculation)
+    #     need_detour = active_mask & front_obstacles & has_side_space 
+    #     if need_detour.any():
+
+    #         perp_directions = torch.stack([-desired_directions[:,1], desired_directions[:,0]], dim=1)
+    #         obstacle_positions = torch.where(front_mask & close_mask, positions_diff, torch.zeros_like(positions_diff))
+    #         avg_obstacle_pos = obstacle_positions.sum(dim=1) / ((front_mask & close_mask).sum(dim=1, keepdim=True) + 1e-8)
+
+    #         detour_sign = torch.sign(torch.sum(avg_obstacle_pos * perp_directions, dim=1))
+    #         perp_directions *= detour_sign.unsqueeze(1)
+    #         repulsive_forces[need_detour] = self.A * perp_directions[need_detour]
+
+    #     repulsive_strengths = torch.exp((4 * self.r - distances) / self.B).unsqueeze(-1)
+    #     general_forces = (self.A * repulsive_strengths * unit_directions).sum(dim=1)
+    #     repulsive_forces += general_forces
+
+    #     return repulsive_forces
+
+
+    # 修复mask和力的方向
     def compute_other_forces(self, positions):
-        positions_diff = positions.unsqueeze(1) - positions.unsqueeze(0)  # [n,n,2]
-        distances = torch.norm(positions_diff, dim=-1)  # [n,n] 
-        
+        positions_diff = positions.unsqueeze(1) - positions.unsqueeze(0)  # j 指向 i [n,n,2]
+        distances = torch.norm(positions_diff, dim=-1)  # [n,n]
+        repulsive_directions = positions_diff / (distances.unsqueeze(-1) + 1e-8)  # [n,n,2]
 
-        unit_directions = positions_diff / (distances.unsqueeze(-1) + 1e-8)
-        desired_directions = self.targets - positions  # [n,2]
+        desired_directions = self.targets - positions  # i 指向target [n,2]
         desired_directions = desired_directions / (torch.norm(desired_directions, dim=-1, keepdim=True) + 1e-8)
-        angles = torch.sum(unit_directions * desired_directions.unsqueeze(1), dim=-1)  # [n,n]
-        
+        directions_to_others = -positions_diff  # [n,n,2] 从 i 指向 j
+        unit_directions_to_others = directions_to_others / (distances.unsqueeze(-1) + 1e-8)
+        angles = torch.sum(unit_directions_to_others * desired_directions.unsqueeze(1), dim=-1)  # [n,n] 
 
-        front_angle_threshold = torch.cos(torch.tensor(30.0 / 180.0 * np.pi))  
-        close_dist = 2 * self.r  
+        # 定义检测区域
+        front_angle_threshold = torch.cos(torch.tensor(30.0 / 180.0 * np.pi))  # 30度前向区域，cos(30°) ≈ 0.866
+        close_dist = 2 * self.r  # 近距离阈值
         front_mask = (angles > front_angle_threshold) & (distances > 0)
         close_mask = distances < close_dist
-        
 
-        side_space_mask = torch.abs(angles) > torch.cos(torch.tensor(60.0 / 180.0 * np.pi))
+        # 检查侧向空间：60° < angle < 120°，即 -0.5 < cos(angle) < 0.5
+        side_space_mask = (angles > -0.5) & (angles < 0.5)
+
+
         has_side_space = ~((side_space_mask & close_mask).any(dim=1))
-        front_obstacles = (front_mask & close_mask).any(dim=1) 
+        front_obstacles = (front_mask & close_mask).any(dim=1)
         stop_mask = front_obstacles & ~has_side_space
         active_mask = ~stop_mask & ~self.reached_target
-    
+
         repulsive_forces = torch.zeros_like(positions)
-        
-        # Calculate bypass force (vectorized calculation)
+
+        # 计算绕行力
         need_detour = active_mask & front_obstacles & has_side_space
         if need_detour.any():
-
-            perp_directions = torch.stack([-desired_directions[:,1], desired_directions[:,0]], dim=1)
-            obstacle_positions = torch.where(front_mask & close_mask, positions_diff, torch.zeros_like(positions_diff))
+            # 前进方向的左垂直方向（逆时针90°）
+            perp_directions = torch.stack([-desired_directions[:,1], desired_directions[:,0]], dim=1)  # [n,2]
+            obstacle_positions = torch.where(
+                (front_mask & close_mask).unsqueeze(-1),  # [n,n,1]
+                directions_to_others,  # 从 i 指向 j 的单位方向
+                torch.zeros_like(directions_to_others)
+            )
             avg_obstacle_pos = obstacle_positions.sum(dim=1) / ((front_mask & close_mask).sum(dim=1, keepdim=True) + 1e-8)
 
-            detour_sign = torch.sign(torch.sum(avg_obstacle_pos * perp_directions, dim=1))
+            detour_sign = -torch.sign(torch.sum(avg_obstacle_pos * perp_directions, dim=1))
             perp_directions *= detour_sign.unsqueeze(1)
             repulsive_forces[need_detour] = self.A * perp_directions[need_detour]
 
+        # 一般排斥力
         repulsive_strengths = torch.exp((4 * self.r - distances) / self.B).unsqueeze(-1)
-        general_forces = (self.A * repulsive_strengths * unit_directions).sum(dim=1)
+        general_forces = (self.A * repulsive_strengths * repulsive_directions).sum(dim=1)
         repulsive_forces += general_forces
 
         return repulsive_forces

@@ -77,6 +77,10 @@ python pacer/run.py \
 
 Use the `--headless` option when running without a visualization window.
 
+## Training
+
+For the training code of the Personalized Gait Converter, please contact the corresponding author.
+
 ## References
 
 This repository is built on top of the following amazing repositories:

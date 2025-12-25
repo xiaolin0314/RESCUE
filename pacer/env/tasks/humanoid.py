@@ -1385,8 +1385,8 @@ class Humanoid(BaseTask):
         return
 
     def render(self, sync_frame_time=False):
-        # if self.viewer:
-            # self._update_camera()
+        if self.viewer:
+            self._update_camera()
         super().render(sync_frame_time)
         return
 
