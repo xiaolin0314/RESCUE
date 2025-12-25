@@ -1296,25 +1296,25 @@ class SocialForceModel:
     #     return repulsive_forces
 
 
-    # 修复mask和力的方向
+  
     def compute_other_forces(self, positions):
-        positions_diff = positions.unsqueeze(1) - positions.unsqueeze(0)  # j 指向 i [n,n,2]
+        positions_diff = positions.unsqueeze(1) - positions.unsqueeze(0)  #  [n,n,2]
         distances = torch.norm(positions_diff, dim=-1)  # [n,n]
         repulsive_directions = positions_diff / (distances.unsqueeze(-1) + 1e-8)  # [n,n,2]
 
-        desired_directions = self.targets - positions  # i 指向target [n,2]
+        desired_directions = self.targets - positions  #  [n,2]
         desired_directions = desired_directions / (torch.norm(desired_directions, dim=-1, keepdim=True) + 1e-8)
-        directions_to_others = -positions_diff  # [n,n,2] 从 i 指向 j
+        directions_to_others = -positions_diff  # [n,n,2] 
         unit_directions_to_others = directions_to_others / (distances.unsqueeze(-1) + 1e-8)
         angles = torch.sum(unit_directions_to_others * desired_directions.unsqueeze(1), dim=-1)  # [n,n] 
 
-        # 定义检测区域
-        front_angle_threshold = torch.cos(torch.tensor(30.0 / 180.0 * np.pi))  # 30度前向区域，cos(30°) ≈ 0.866
-        close_dist = 2 * self.r  # 近距离阈值
+        # 
+        front_angle_threshold = torch.cos(torch.tensor(30.0 / 180.0 * np.pi))  # 
+        close_dist = 2 * self.r  # 
         front_mask = (angles > front_angle_threshold) & (distances > 0)
         close_mask = distances < close_dist
 
-        # 检查侧向空间：60° < angle < 120°，即 -0.5 < cos(angle) < 0.5
+        # 60° < angle < 120°，-0.5 < cos(angle) < 0.5
         side_space_mask = (angles > -0.5) & (angles < 0.5)
 
 
@@ -1325,14 +1325,14 @@ class SocialForceModel:
 
         repulsive_forces = torch.zeros_like(positions)
 
-        # 计算绕行力
+        # 
         need_detour = active_mask & front_obstacles & has_side_space
         if need_detour.any():
-            # 前进方向的左垂直方向（逆时针90°）
+            # 
             perp_directions = torch.stack([-desired_directions[:,1], desired_directions[:,0]], dim=1)  # [n,2]
             obstacle_positions = torch.where(
                 (front_mask & close_mask).unsqueeze(-1),  # [n,n,1]
-                directions_to_others,  # 从 i 指向 j 的单位方向
+                directions_to_others,  # 
                 torch.zeros_like(directions_to_others)
             )
             avg_obstacle_pos = obstacle_positions.sum(dim=1) / ((front_mask & close_mask).sum(dim=1, keepdim=True) + 1e-8)
@@ -1341,7 +1341,7 @@ class SocialForceModel:
             perp_directions *= detour_sign.unsqueeze(1)
             repulsive_forces[need_detour] = self.A * perp_directions[need_detour]
 
-        # 一般排斥力
+        # 
         repulsive_strengths = torch.exp((4 * self.r - distances) / self.B).unsqueeze(-1)
         general_forces = (self.A * repulsive_strengths * repulsive_directions).sum(dim=1)
         repulsive_forces += general_forces
