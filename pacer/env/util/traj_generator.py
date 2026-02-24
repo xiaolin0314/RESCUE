@@ -181,7 +181,7 @@ class TrajGenerator():
                 dtheta = torch.zeros_like(speed)
 
                 ##############social force
-                speed_now = (last_pos-init_pos)/delta_t
+                speed_now = -(last_pos-init_pos)/delta_t
                 if last_pos[0,0] == float("inf"):
                     speed_now = torch.zeros_like(speed_now)
                 mass = [1]*n
